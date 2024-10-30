@@ -1,0 +1,62 @@
+load('ext://restart_process', 'docker_build_with_restart')
+
+# Load the Kubernetes manifests
+k8s_yaml('k8s-manifests.yaml')
+
+# Build the Go server using a multi-stage Dockerfile
+docker_build_with_restart('search-engine-server', '.',
+    dockerfile='Dockerfile.server',
+    entrypoint=['/app/server'],
+    live_update=[
+        sync('.', '/app'),
+        run('go build -o /app/server /app/cmd/api/main.go')
+    ])
+
+# Build the Go worker using a multi-stage Dockerfile
+docker_build_with_restart('search-engine-worker', '.',
+    dockerfile='Dockerfile.worker',
+    entrypoint=['/app/worker'],
+    live_update=[
+        sync('.', '/app'),
+        run('go build -o /app/worker /app/cmd/worker/main.go')
+    ])
+
+# Forward ports
+k8s_resource('search-engine-server', port_forwards='50051:50051')
+k8s_resource('rabbitmq', port_forwards=['5672:5672', '15672:15672'])
+k8s_resource('minio', port_forwards='9000:9000')
+k8s_resource('postgresql', port_forwards='5432:5432')
+
+
+# Add labels to resources for easier management
+k8s_resource('search-engine-server', labels=['app'])
+k8s_resource('search-engine-worker', labels=['app'])
+k8s_resource('rabbitmq', labels=['infra'])
+k8s_resource('minio', labels=['infra'])
+k8s_resource('postgresql', labels=['infra'])
+
+# Build CLI binary
+local_resource(
+    'build-cli',
+    cmd='go build -o bin/cli cli/main.go',
+    deps=['cli/'],
+    labels=['cli']
+)
+
+# Run CLI command
+custom_build(
+    'run-cli',
+    'bin/cli',
+    deps=['bin/cli'],
+    live_update=[],
+)
+update_settings(suppress_unused_image_warnings=["run-cli"])
+
+
+# Watch proto files and rebuild Go protos
+local_resource(
+    'build-go-proto',
+    cmd='make build-go-proto',
+    deps=['proto/'],
+    labels=['proto']
+)

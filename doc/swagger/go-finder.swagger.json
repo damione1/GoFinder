@@ -1,0 +1,297 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Go finder",
+    "version": "0.0.1",
+    "contact": {
+      "name": "Damien Goehrig",
+      "url": "github.com/Damione1/GoFinder",
+      "email": "go-finder@damiengoehrig.ca"
+    }
+  },
+  "tags": [
+    {
+      "name": "Search",
+      "description": "Endpoints for searching"
+    },
+    {
+      "name": "Ingestion",
+      "description": "Endpoints for user management"
+    },
+    {
+      "name": "Security",
+      "description": "Endpoints for security management"
+    },
+    {
+      "name": "Statistics",
+      "description": "Endpoints for statistics"
+    },
+    {
+      "name": "SearchService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/files/complete": {
+      "post": {
+        "summary": "NotifyUploadComplete",
+        "operationId": "SearchService_NotifyUploadComplete",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbNotifyUploadCompleteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "The request to notify the server that the upload is complete.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbNotifyUploadCompleteRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Ingestion"
+        ],
+        "security": []
+      }
+    },
+    "/v1/files/upload": {
+      "post": {
+        "summary": "GetUploadURL",
+        "operationId": "SearchService_GetUploadURL",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetUploadURLResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "description": "The request to get the URL to upload a file to.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbGetUploadURLRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Ingestion"
+        ],
+        "security": []
+      }
+    },
+    "/v1/search": {
+      "post": {
+        "summary": "Search",
+        "operationId": "SearchService_Search",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbSearchResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbSearchRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Search"
+        ],
+        "security": []
+      }
+    }
+  },
+  "definitions": {
+    "pbFileType": {
+      "type": "string",
+      "enum": [
+        "csv",
+        "json",
+        "parquet"
+      ],
+      "default": "csv"
+    },
+    "pbGetUploadURLRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the ressource."
+        },
+        "type": {
+          "$ref": "#/definitions/pbFileType",
+          "description": "The type of the ressource."
+        }
+      },
+      "description": "The request to get the URL to upload a file to.",
+      "required": [
+        "name",
+        "type"
+      ]
+    },
+    "pbGetUploadURLResponse": {
+      "type": "object",
+      "properties": {
+        "uploadUrl": {
+          "type": "string",
+          "description": "The URL to upload the file to."
+        },
+        "fileId": {
+          "type": "string",
+          "description": "The ID of the file."
+        }
+      },
+      "description": "The response to get the URL to upload a file to."
+    },
+    "pbNotifyUploadCompleteRequest": {
+      "type": "object",
+      "properties": {
+        "fileId": {
+          "type": "string",
+          "description": "The ID of the file."
+        }
+      },
+      "description": "The request to notify the server that the upload is complete.",
+      "required": [
+        "fileId"
+      ]
+    },
+    "pbNotifyUploadCompleteResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Whether the upload was successful."
+        }
+      },
+      "description": "The response to notify the server that the upload is complete."
+    },
+    "pbQuery": {
+      "type": "object",
+      "properties": {
+        "search": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "search"
+      ]
+    },
+    "pbResponse": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the resource."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of the resource."
+        },
+        "score": {
+          "type": "number",
+          "format": "float",
+          "description": "The score of the resource."
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "score"
+      ]
+    },
+    "pbSearchRequest": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "$ref": "#/definitions/pbQuery",
+          "description": "The query to search for."
+        }
+      },
+      "required": [
+        "query"
+      ]
+    },
+    "pbSearchResponse": {
+      "type": "object",
+      "properties": {
+        "responses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pbResponse"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package pb;
+import "google/api/field_behavior.proto";
+
+option go_package = "github.com/damione1/GoFinder/pkg/proto;pb";
+
+message Query {
+    string search = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message Response {
+    // The name of the resource.
+    string name = 1 [(google.api.field_behavior) = REQUIRED];
+
+    // The type of the resource.
+    string type = 2 [(google.api.field_behavior) = REQUIRED];
+
+    // The score of the resource.
+    float score = 3 [(google.api.field_behavior) = REQUIRED];
+}
+
+message SearchRequest {
+    // The query to search for.
+    Query query = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message SearchResponse {
+    repeated Response responses = 1;
+}

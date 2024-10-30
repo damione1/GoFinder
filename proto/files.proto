@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package pb;
+import "google/api/field_behavior.proto";
+
+option go_package = "github.com/damione1/GoFinder/pkg/proto;pb";
+
+enum FileType {
+    csv = 0;
+    json = 1;
+    parquet = 2;
+}
+
+// The request to get the URL to upload a file to.
+message GetUploadURLRequest {
+    // The name of the ressource.
+    string name = 1 [(google.api.field_behavior) = REQUIRED];
+    // The type of the ressource.
+    FileType type = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+// The response to get the URL to upload a file to.
+message GetUploadURLResponse {
+    // The URL to upload the file to.
+    string upload_url = 1;
+    // The ID of the file.
+    string file_id = 2;
+}
+
+// The request to notify the server that the upload is complete.
+message NotifyUploadCompleteRequest {
+    // The ID of the file.
+    string file_id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+// The response to notify the server that the upload is complete.
+message NotifyUploadCompleteResponse {
+    // Whether the upload was successful.
+  bool success = 1;
+}
